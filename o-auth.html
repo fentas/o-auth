@@ -50,10 +50,6 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
       width: 600,
       height: 800,
 
-      observe: {
-        'popup.closed': 'popupClosed'
-      },
-
       ready: function() {
         // get query string
         var query   = qString(location.search),
@@ -96,11 +92,12 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
           '&state=' + csrf.create() +
           '&' + this.params, 'o-auth', 'height='+this.height+',width='+this.width);
 
-        this.fire('opened');
+        this.fire('opened', {popup: this.popup});
+        this.popup.onunload = this.popupClosed.bind(this);
       },
 
-      popupClosed: function(oval, nval) {
-        if ( nval ) {
+      popupClosed: function(event) {
+        if ( this.popup !== null ) {
           this.fire('closed');
         }
       },
