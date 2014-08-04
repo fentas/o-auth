@@ -93,11 +93,21 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
           '&' + this.params, 'o-auth', 'height='+this.height+',width='+this.width);
 
         this.fire('opened', {popup: this.popup});
-        this.popup.onunload = this.popupClosed.bind(this);
+        //this.popup.onunload = this.popupClosed.bind(this);
+        //TODO: find better solution...
+        var timer = setInterval(function() {
+          if ( this.popup === null )
+            clearInterval(timer);
+          else if ( this.popup.closed ) {
+            clearInterval(timer);
+            this.popupClosed.apply(this);
+          }
+        }.bind(this), 1000);
       },
 
       popupClosed: function(event) {
-        if ( this.popup !== null ) {
+        if ( this.popup !== null && this.popup.closed ) {
+          this.popup = null;
           this.fire('closed');
         }
       },
