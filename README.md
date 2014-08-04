@@ -9,6 +9,12 @@ http://blog.vjeux.com/2012/javascript/github-oauth-login-browser-side.html
 
 ![oauth workflow](http://blog.vjeux.com/wp-content/uploads/2012/03/githublogin1.png)
 
+#### Side note to blog post ~ `Phase 2 - Get access token`
+I left out _Phase 2 - Get access token_ by purpose. Because of **Security reasons**!
+With this token you can do everything in limitations of the requested scope from
+everywhere you want. I think you shouldn't toss it out that way. Keep it save,
+keep it server side.
+
 ## Getting started
 Most likely you have to register your app/site for oauth at your chosen service.
 (In github ~ User page > Edit profile > Applications > Register new application...)
