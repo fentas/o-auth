@@ -1,0 +1,8 @@
+{
+  "name": "o-auth",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master",
+    "core-localstorage": "Polymer/core-localstorage#master"
+  }
+}

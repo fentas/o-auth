@@ -1,0 +1,109 @@
+<!--
+Copyright (c) 2014 muiis Authors. All rights reserved.
+
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-localstorage/core-localstorage.html">
+
+<polymer-element name="o-auth" attributes="service client-id code listen popup width height">
+  <template>
+    <core-localstorage name="code" value="{{code}}"></core-localstorage>
+  </template>
+  <script>
+  (function() {
+
+    // Polyfill crypto.getRandomValues
+    if ( typeof window.crypto === 'undefined' )
+      window.crypto = {};
+    if ( typeof window.crypto.getRandomValues === 'undefined' ) {
+      window.crypto.getRandomValues = function(typedArray) {
+        for ( var i = 0 ; i < typedArray.length ; i++ )
+          typedArray[i] = Math.floor(Math.random() * Math.pow(2, 8 * typedArray.BYTES_PER_ELEMENT));
+      };
+    }
+
+    var csrf = {
+      token: null,
+      create: function() {
+        var tmp = new Uint16Array(1);
+        window.crypto.getRandomValues(tmp);
+        return ( this.token = btoa(tmp[0].toString(2)) );
+      }
+    };
+
+    var qString = function(string) {
+      if ( typeof string !== 'string' ) return string;
+      var tmp = {};
+      string.replace(/(?:\?|&|^)(.+?)=([^&]+)/g, function(d, s, k, v) { this[d(k)] = d(v); }.bind(tmp, decodeURIComponent));
+      return tmp;
+    };
+
+    Polymer('o-auth', {
+      code: '',
+
+      service: '',
+      params: '',
+
+      redirect: null,
+      listen: 'oauth=github',
+
+      popup: null,
+      width: 600,
+      height: 800,
+
+      observe: {
+        'popup.closed': 'popupClosed'
+      },
+
+      created: function() {
+        // get query string
+        var query   = qString(location.search);
+        this.listen = qString(this.listen);
+
+        // if this is popup + compare listen pattern with query string
+        if ( window.opener && (function(s, q) { for(var k in s) if(q[k]!==s[k]) return false; return true; }(this.listen, query)) ) {
+          window.opener.postMessage(query, window.location);
+          window.close();
+        }
+        else {
+          // listen for popup message
+          window.addEventListener('message', function (event) {
+            this.popup = null;
+
+            if ( event.data.state === csrf.token ) {
+              this.code = event.data.code;
+
+              this.fire('login', {code: this.code});
+            }
+            else {
+              // potential cross side scripting... ~ error
+              this.fire('csrf', {send: csrf.token, recived: event.data.state});
+            }
+          }.bind(this));
+        }
+      },
+
+      oauth: function() {
+        this.popup = window.open(this.service +
+          '?client_id=' + this['client-id'] +
+          '&redirect_uri=' +
+            window.location.protocol + '//' +
+            window.location.host +
+            window.location.pathname + '?' +
+            // create query string of listen pattern
+            Object.keys(this.listen).reduce(function(a,k){a.push(k+'='+encodeURIComponent(this.listen[k]));return a;}.bind(this),[]).join('&') +
+          '&state=' + csrf.create() +
+          '&' + qString(this.params), 'o-auth', 'height='+this.height+',width='+this.width);
+      },
+
+      popupClosed: function(oval, nval) {
+        if ( nval ) {
+          this.fire('closed');
+        }
+      }
+    });
+
+  })();
+  </script>
+</polymer-element>
