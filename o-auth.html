@@ -6,9 +6,9 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-localstorage/core-localstorage.html">
 
-<polymer-element name="o-auth" attributes="service client params code listen popup width height">
+<polymer-element name="o-auth" attributes="service client params code save listen popup width height">
   <template>
-    <core-localstorage name="code" value="{{code}}"></core-localstorage>
+    <core-localstorage name="code" value="{{code | saveCode}}"></core-localstorage>
   </template>
   <script>
   (function() {
@@ -41,6 +41,7 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
 
     Polymer('o-auth', {
       code: '',
+      save: 'yes',
 
       listen: 'oauth=o-auth',
       params: '',
@@ -71,11 +72,11 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
             if ( event.data.state === csrf.token ) {
               this.code = event.data.code;
 
-              this.fire('login', {code: this.code});
+              this.fire('success', {code: this.code});
             }
             else {
               // potential cross side scripting... ~ error
-              this.fire('csrf', {send: csrf.token, recived: event.data.state});
+              this.fire('error', {send: csrf.token, recived: event.data.state});
             }
           }.bind(this));
         }
@@ -94,12 +95,18 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
             Object.keys(listen).reduce(function(a,k){a.push(k+'='+encodeURIComponent(listen[k]));return a;}.bind(this),[]).join('&') +
           '&state=' + csrf.create() +
           '&' + this.params, 'o-auth', 'height='+this.height+',width='+this.width);
+
+        this.fire('opened');
       },
 
       popupClosed: function(oval, nval) {
         if ( nval ) {
           this.fire('closed');
         }
+      },
+
+      saveCode: function(value) {
+        return (this.save === 'yes' ? value : '');
       }
     });
 
