@@ -54,7 +54,7 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
         'popup.closed': 'popupClosed'
       },
 
-      ready: function() {
+      ready: function() { console.warn(this.save);
         // get query string
         var query   = qString(location.search),
             listen = qString(this.listen);
@@ -105,8 +105,15 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
         }
       },
 
-      saveCode: function(value) {
-        return (this.save === 'yes' ? value : '');
+      saveCode: {
+        toDOM: function(value) {
+          console.warn(this.save, (this.save === 'yes' ? value : ''));
+          return this.save === 'yes' ? value : '';
+        },
+        toModel: function(value) {
+          console.warn(value);
+          return value;
+        }
       }
     });
 
