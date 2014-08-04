@@ -6,7 +6,7 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../core-localstorage/core-localstorage.html">
 
-<polymer-element name="o-auth" attributes="service client-id code listen popup width height">
+<polymer-element name="o-auth" attributes="service client params code listen popup width height">
   <template>
     <core-localstorage name="code" value="{{code}}"></core-localstorage>
   </template>
@@ -42,11 +42,8 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
     Polymer('o-auth', {
       code: '',
 
-      service: '',
+      listen: 'oauth=o-auth',
       params: '',
-
-      redirect: null,
-      listen: 'oauth=github',
 
       popup: null,
       width: 600,
@@ -56,13 +53,13 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
         'popup.closed': 'popupClosed'
       },
 
-      created: function() {
+      ready: function() {
         // get query string
-        var query   = qString(location.search);
-        this.listen = qString(this.listen);
+        var query   = qString(location.search),
+            listen = qString(this.listen);
 
         // if this is popup + compare listen pattern with query string
-        if ( window.opener && (function(s, q) { for(var k in s) if(q[k]!==s[k]) return false; return true; }(this.listen, query)) ) {
+        if ( window.opener && (function(s, q) { for(var k in s) if(q[k]!==s[k]) return false; return true; }(listen, query)) ) {
           window.opener.postMessage(query, window.location);
           window.close();
         }
@@ -85,16 +82,18 @@ Copyright (c) 2014 muiis Authors. All rights reserved.
       },
 
       oauth: function() {
+        var listen = qString(this.listen);
+        if ( typeof listen !== 'object' ) throw new Error("Nothing to listen when popup opens.");
         this.popup = window.open(this.service +
-          '?client_id=' + this['client-id'] +
+          '?client_id=' + this.client +
           '&redirect_uri=' +
             window.location.protocol + '//' +
             window.location.host +
             window.location.pathname + '?' +
             // create query string of listen pattern
-            Object.keys(this.listen).reduce(function(a,k){a.push(k+'='+encodeURIComponent(this.listen[k]));return a;}.bind(this),[]).join('&') +
+            Object.keys(listen).reduce(function(a,k){a.push(k+'='+encodeURIComponent(listen[k]));return a;}.bind(this),[]).join('&') +
           '&state=' + csrf.create() +
-          '&' + qString(this.params), 'o-auth', 'height='+this.height+',width='+this.width);
+          '&' + this.params, 'o-auth', 'height='+this.height+',width='+this.width);
       },
 
       popupClosed: function(oval, nval) {
