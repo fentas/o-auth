@@ -1,6 +1,6 @@
 
 # o-auth
-Polymer custom element for single site oauth.
+Polymer custom element for single site oauth. [What is this polymer?](http://www.polymer-project.org/)
 
 ## Inspired by
 http://blog.vjeux.com/2012/javascript/github-oauth-login-browser-side.html
@@ -10,7 +10,14 @@ http://blog.vjeux.com/2012/javascript/github-oauth-login-browser-side.html
 ![oauth workflow](http://blog.vjeux.com/wp-content/uploads/2012/03/githublogin1.png)
 
 ## Getting started
+Most likely you have to register your app/site for oauth at your chosen service.
+(In github ~ User page > Edit profile > Applications > Register new application...)
 
+**NOTE**: You have to enter an redirect URL. Use the URL in which the whole
+process was triggered. Plus what is specified in the `listen` attribute.
+(See below)
+
+> example for **Authorization callback URL**: foobar.org/?oauth=o-auth
 
 
 ## Usage
